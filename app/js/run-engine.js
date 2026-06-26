@@ -2,12 +2,10 @@
 let currentRun=null;     // { runId, steps:[{nodeId,answer,next}], complete }
 let tnode=null;
 let _runSaveTimer=null;
-let multiSel=new Set();
 let _commitSourceNode=null;   // node the user credits for this commitment (turns it gold)
 
 function currentRunId(){return currentRun?currentRun.runId:null;}
 function firstNode(){return Object.keys(parsedTree)[0]||null;}
-function totalNodes(){return Object.keys(parsedTree).length;}
 
 // ── reflect entry — just check that the tree has at least one node ──
 function attemptReflect(){
@@ -18,7 +16,6 @@ function attemptReflect(){
 // ── start / exit ──
 function startReflection(){
   currentRun={runId:'run_'+Date.now(),steps:[],complete:false};
-  multiSel=new Set();
   tnode=firstNode();
   const sc=document.getElementById('reflectScreen');if(sc)sc.classList.add('on');
   renderCard();
@@ -33,11 +30,6 @@ function renderCard(){
   const node=parsedTree[tnode];
   document.getElementById('rcardEnd').style.display='none';
   document.getElementById('rcardMain').style.display='';
-  const step=(currentRun?currentRun.steps.length:0)+1;
-  const total=Math.max(step,totalNodes());
-  const idx=document.getElementById('rcardIdx');if(idx)idx.textContent=step+' / '+total;
-  const ty=document.getElementById('rcardType');if(ty)ty.textContent=(node&&node.type==='text')?'TEXT RESPONSE':'CHOICE';
-  setProgress((step-1)/total);
   const prompt=document.getElementById('rcardPrompt');if(prompt)prompt.textContent=node?node.title:'';
   const rc=document.getElementById('rcardRecall');if(rc)rc.innerHTML=buildRecall(node);
   const input=document.getElementById('rcardInput'),choices=document.getElementById('rcardChoices'),next=document.getElementById('rNext');
@@ -50,7 +42,6 @@ function renderCard(){
   }
   const back=document.getElementById('rBack');if(back)back.style.display=(currentRun&&currentRun.steps.length>0)?'':'none';
 }
-function setProgress(frac){const p=document.getElementById('reflectProg');if(p)p.style.width=Math.max(0,Math.min(1,frac))*100+'%';}
 function buildRecall(node){
   if(!node||!node.title)return'';
   const map=window._recallMap||{};
@@ -126,7 +117,6 @@ function autoGrowInput(el){
 function showEndScreen(){
   document.getElementById('rcardMain').style.display='none';
   const end=document.getElementById('rcardEnd');end.style.display='';
-  setProgress(1);
   _commitDateVal='';
   const ct=document.getElementById('commitText');if(ct)ct.value='';
   const dl=document.getElementById('commitDateLabel');if(dl)dl.textContent='add a date';

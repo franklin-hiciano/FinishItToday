@@ -145,37 +145,7 @@ function dismissNotiBanner(){
   document.body.classList.remove('has-banner');
 }
 
-// ── reminder popover (by the profile pic) ──
-function toggleNotifPop(e){
-  if(e)e.stopPropagation();
-  const pop=document.getElementById('notifPop');if(!pop)return;
-  if(pop.classList.toggle('on'))renderNotifPop();
-}
-function closeNotifPop(){const pop=document.getElementById('notifPop');if(pop)pop.classList.remove('on');}
-function renderNotifPop(){
-  const time=document.getElementById('npTime'),status=document.getElementById('npStatus'),toggle=document.getElementById('npToggle');
-  if(time)time.value=notifTime();
-  if(!_hasNotif){if(status)status.textContent='notifications aren’t available here.';if(toggle)toggle.style.display='none';return;}
-  const perm=Notification.permission,on=notifConfirmed();
-  if(status)status.textContent=perm==='denied'?'blocked in your browser settings'
-    :(on?'on — you’ll be reminded daily':(perm==='granted'?'tap the notification to confirm':'off'));
-  if(toggle){toggle.textContent=on?'disable':'enable';toggle.classList.toggle('on',on);}
-}
-async function npToggleEnable(){
-  if(!_hasNotif)return;
-  if(notifConfirmed()){
-    localStorage.setItem('notif_confirmed','0');localStorage.setItem('notif_enabled','0');clearSchedule();refreshNotifUI();
-  }else{
-    await sendTestNotif();
-  }
-}
-function onNotifTimeChange(){
-  const t=document.getElementById('npTime');setNotifTime(t?t.value:notifTime());
-  if(notifConfirmed())scheduleNotif();
-  refreshNotifUI();
-}
-
-function refreshNotifUI(){renderNotifPop();checkNotiBanner();}
+function refreshNotifUI(){checkNotiBanner();}
 
 // ── init ──
 (function init(){
@@ -183,16 +153,6 @@ function refreshNotifUI(){renderNotifPop();checkNotiBanner();}
   initLoudBtn();
   if(typeof bindEditorEvents==='function')bindEditorEvents();
   if(typeof bindHolds==='function')bindHolds();
-  if(typeof setPane==='function')setPane(0);
-  if(typeof renderRun==='function')renderRun();
   checkNotiBanner();
   if(_hasNotif&&Notification.permission==='granted'&&notifConfirmed())scheduleNotif();
-  // close the reminder popover on outside click
-  document.addEventListener('click',e=>{
-    const pop=document.getElementById('notifPop');if(!pop||!pop.classList.contains('on'))return;
-    if(e.target.closest('#notifPop')||e.target.closest('#notifIconBtn'))return;
-    pop.classList.remove('on');
-  });
-  let rz=null;
-  window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{if(typeof renderEditCanvas==='function')renderEditCanvas();if(typeof refreshRunCanvas==='function')refreshRunCanvas();},200);});
 })();
